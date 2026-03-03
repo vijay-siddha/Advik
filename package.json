@@ -1,0 +1,28 @@
+{
+  "name": "basic-user-management",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Basic user management app with Express backend and simple frontend",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "codegen": "node scripts/generate-types.cjs",
+    "check:types": "node scripts/check-types.cjs",
+    "db:seed": "node scripts/seed-components.js",
+    "db:verify": "node scripts/verify-components.js"
+  },
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.1.0",
+    "sql.js": "^1.10.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^13.1.1"
+  }
+}

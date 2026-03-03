@@ -1,0 +1,163 @@
+[
+  {
+    "id": "root-001",
+    "name": "Industrial Centrifugal Pump - X500",
+    "parent_id": null,
+    "status": "published",
+    "attributes": {
+      "Flow Rate": "450 m³/h",
+      "Head Pressure": "85 meters",
+      "Motor Power": "75 kW",
+      "Inlet Diameter": "150 mm",
+      "Outlet Diameter": "125 mm",
+      "Efficiency": "82%",
+      "Impeller Type": "Enclosed",
+      "Seal Type": "Mechanical Double",
+      "Operating Temp": "-10 to 140 °C",
+      "Material Grade": "SS 316L",
+      "Voltage": "440V 3-Phase",
+      "Weight": "320 kg"
+    },
+    "media": { "photos": ["pump_main.jpg"], "videos": [], "docs": ["manual_v2.pdf"] }
+  },
+  {
+    "id": "sub-101",
+    "name": "High-Flow Impeller Assembly",
+    "parent_id": "root-001",
+    "status": "published",
+    "attributes": {
+      "Vane Count": 6,
+      "Diameter": "320 mm",
+      "Balancing Grade": "G2.5",
+      "Max Tip Speed": "35 m/s",
+      "Coating": "Ceramic Wear-Resistant",
+      "Suction Specific Speed": "8500",
+      "Bore Size": "45 mm",
+      "Keyway Width": "12 mm",
+      "Cast Method": "Investment Casting",
+      "Trimmed Diameter": "No",
+      "Specific Gravity Max": "1.2"
+    },
+    "media": { "photos": ["impeller_sub.jpg"], "videos": [], "docs": [] }
+  },
+  {
+    "id": "sub-101-a",
+    "name": "Impeller Wear Ring (Level 3)",
+    "parent_id": "sub-101",
+    "status": "published",
+    "attributes": {
+      "Outer Diameter": "325 mm",
+      "Inner Diameter": "322 mm",
+      "Clearance": "0.15 mm",
+      "Hardness": "450 BHN",
+      "Material": "Stellite 6",
+      "Mounting Type": "Shrink Fit",
+      "Replaceable": "Yes",
+      "Friction Coeff": "0.18",
+      "Surface Finish": "0.8 Ra",
+      "Thermal Expansion": "11.2 µm/m°C"
+    },
+    "media": { "photos": [], "videos": [], "docs": [] }
+  },
+  {
+    "id": "root-002",
+    "name": "Precision CNC Milling Center - M8",
+    "parent_id": null,
+    "status": "published",
+    "attributes": {
+      "Axis Travel X/Y/Z": "800/500/550 mm",
+      "Spindle Speed": "12,000 RPM",
+      "Table Load Max": "600 kg",
+      "Tool Changer Capacity": "24 Tools",
+      "Rapid Traverse": "36 m/min",
+      "Positioning Accuracy": "0.005 mm",
+      "Repeatability": "0.003 mm",
+      "Spindle Taper": "BT40",
+      "Coolant Pressure": "20 Bar",
+      "Control System": "Fanuc 0i-MF",
+      "Power Requirement": "25 kVA",
+      "Floor Space": "3.5 x 2.8 m"
+    },
+    "media": { "photos": ["cnc_m8.jpg"], "videos": ["operation.mp4"], "docs": [] }
+  },
+  {
+    "id": "sub-201",
+    "name": "High-Speed Spindle Unit",
+    "parent_id": "root-002",
+    "status": "published",
+    "attributes": {
+      "Bearing Type": "Ceramic Hybrid",
+      "Cooling Method": "Oil-Mist Jacket",
+      "Clamping Force": "8.5 kN",
+      "Runout at Taper": "0.002 mm",
+      "Drive Type": "Built-in Motor",
+      "Torque Max": "95 Nm",
+      "Lubrication": "Grease-Life",
+      "Air Purge Flow": "30 L/min",
+      "Encoder Resolution": "0.0001 deg",
+      "Unclamp Pressure": "60 Bar",
+      "Dynamic Balance": "G0.4"
+    },
+    "media": { "photos": ["spindle_cutaway.jpg"], "videos": [], "docs": ["spindle_specs.pdf"] }
+  },
+  {
+    "id": "sub-201-a",
+    "name": "Spindle Drawbar Assembly (Level 3)",
+    "parent_id": "sub-201",
+    "status": "published",
+    "attributes": {
+      "Spring Stack Force": "12,000 N",
+      "Stroke Length": "6.5 mm",
+      "Gripper Type": "Petal Collet",
+      "Material": "4140 Hardened Steel",
+      "Surface Treatment": "Black Oxide",
+      "Cycle Life": "1,000,000 cycles",
+      "Shank Size": "CAT40/BT40",
+      "Locking Mechanism": "Mechanical Spring",
+      "Release Trigger": "Hydraulic Piston",
+      "Weight": "4.2 kg"
+    },
+    "media": { "photos": [], "videos": [], "docs": [] }
+  },
+  {
+    "id": "root-003",
+    "name": "Heavy Duty Industrial Radiator - R2000",
+    "parent_id": null,
+    "status": "published",
+    "attributes": {
+      "Cooling Capacity": "1200 kW",
+      "Fan Diameter": "1800 mm",
+      "Dry Weight": "1450 kg",
+      "Core Material": "Copper/Brass",
+      "Tank Material": "Cast Iron",
+      "Max Working Pressure": "6 Bar",
+      "Inlet Temp Max": "105 °C",
+      "Flow Rate Max": "1500 LPM",
+      "Fin Density": "12 FPI",
+      "Air Flow": "45,000 CFM",
+      "Mounting Orientation": "Vertical",
+      "Corrosion Protection": "Epoxy Coating"
+    },
+    "media": { "photos": ["radiator_front.jpg"], "videos": [], "docs": [] }
+  },
+  {
+    "id": "sub-301",
+    "name": "Radiator Core Section - A1",
+    "parent_id": "root-003",
+    "status": "published",
+    "attributes": {
+      "Tube Type": "Flat Seamless",
+      "Tube Rows": "5",
+      "Fin Thickness": "0.12 mm",
+      "Joint Type": "Solder Bake",
+      "Testing Pressure": "9 Bar",
+      "Expansion Joints": "Sliding Type",
+      "Section Height": "1200 mm",
+      "Section Width": "600 mm",
+      "Thermal Conductivity": "380 W/mK",
+      "Tube Wall Thickness": "0.4 mm",
+      "Internal Volume": "45 L"
+    },
+    "media": { "photos": ["core_closeup.jpg"], "videos": [], "docs": [] }
+  }
+]

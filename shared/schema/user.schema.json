@@ -1,0 +1,62 @@
+{
+  "$id": "https://example.com/schemas/user.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Role": {
+      "type": "string",
+      "enum": ["admin", "user"]
+    },
+    "User": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string", "minLength": 1 },
+        "role": { "$ref": "#/$defs/Role" },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      },
+      "required": ["id", "email", "name", "role", "created_at", "updated_at"]
+    },
+    "UserInsert": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string", "minLength": 1 },
+        "password": { "type": "string", "minLength": 6 },
+        "role": { "$ref": "#/$defs/Role" }
+      },
+      "required": ["email", "name", "password"]
+    },
+    "UserUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string", "minLength": 1 },
+        "password": { "type": "string", "minLength": 6 },
+        "role": { "$ref": "#/$defs/Role" }
+      },
+      "minProperties": 1
+    },
+    "PasswordResetRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": { "type": "string", "format": "email" }
+      },
+      "required": ["email"]
+    },
+    "PasswordResetConfirm": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "token": { "type": "string", "minLength": 20 },
+        "password": { "type": "string", "minLength": 6 }
+      },
+      "required": ["token", "password"]
+    }
+  }
+}
