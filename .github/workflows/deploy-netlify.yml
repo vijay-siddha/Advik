@@ -1,0 +1,94 @@
+name: Deploy to Netlify
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: ./client
+        run: npm run build
+        env:
+          VITE_API_BASE: ${{ secrets.NETLIFY_API_URL || 'https://advik-api.netlify.app' }}
+
+      - name: Deploy to Netlify
+        uses: netlify/actions/cli@master
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        with:
+          args: deploy --prod --dir=client/dist
+        timeout-minutes: 1
+
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Create serverless function
+        run: |
+          mkdir -p netlify/functions
+          cp server.js netlify/functions/
+          cp -r db netlify/functions/
+          cp -r api netlify/functions/
+          cp -r shared netlify/functions/
+          cp package.json netlify/functions/
+          cp -r public netlify/functions/ || true
+          echo "NODE_ENV=production" > netlify/functions/.env
+          echo "JWT_SECRET=advik-production-jwt-secret-temporary" >> netlify/functions/.env
+          echo "DATABASE_FILE=./db.sqlite3" >> netlify/functions/.env
+
+      - name: Create Netlify configuration
+        run: |
+          cat > netlify.toml << 'EOF'
+          [build]
+            publish = "client/dist"
+            functions = "netlify/functions"
+          
+          [[redirects]]
+            from = "/api/*"
+            to = "/.netlify/functions/server/:splat"
+            status = 200
+          
+          [[redirects]]
+            from = "/*"
+            to = "/index.html"
+            status = 404
+          EOF
+
+      - name: Deploy to Netlify
+        uses: netlify/actions/cli@master
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        with:
+          args: deploy --prod --dir=.
+        timeout-minutes: 1

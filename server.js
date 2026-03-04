@@ -40,6 +40,7 @@ const validateResetConfirm = ajv.getSchema(baseSchema.$id + '#/$defs/PasswordRes
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
 function genId() {
   return uuidv4();
@@ -91,7 +92,13 @@ function requireAnyRole(roles) {
 }
 
 const app = express();
-app.use(cors({ origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174'], credentials: true }));
+
+// CORS configuration
+const corsOrigins = NODE_ENV === 'production' 
+  ? ['https://dimblek7.github.io/Advik'] // Update with your actual GitHub Pages URL
+  : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174'];
+
+app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
