@@ -26,6 +26,7 @@ const {
 const can_access = require('./api/middleware/can_access');
 const multer = require('multer');
 const fs = require('fs');
+const { setupProductionMiddleware } = require('./middleware/production');
 
 const Ajv = require('ajv/dist/2020');
 const addFormats = require('ajv-formats');
@@ -91,6 +92,10 @@ function requireAnyRole(roles) {
 }
 
 const app = express();
+
+// Setup production middleware (security, compression, rate limiting)
+setupProductionMiddleware(app);
+
 app.use(cors({ origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174'], credentials: true }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));

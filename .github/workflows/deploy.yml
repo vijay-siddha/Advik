@@ -1,0 +1,94 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [ main, develop, qa ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy-dev:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd client && npm ci
+    
+    - name: Build application
+      run: npm run deploy:dev
+    
+    - name: Deploy to Hostinger DEV
+      run: |
+        # Add your Hostinger deployment commands here
+        echo "Deploying to DEV environment"
+        # scp or rsync to Hostinger DEV server
+
+  deploy-qa:
+    if: github.ref == 'refs/heads/qa'
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd client && npm ci
+    
+    - name: Build application
+      run: npm run deploy:qa
+    
+    - name: Deploy to Hostinger QA
+      run: |
+        # Add your Hostinger deployment commands here
+        echo "Deploying to QA environment"
+        # scp or rsync to Hostinger QA server
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd client && npm ci
+    
+    - name: Run tests
+      run: |
+        npm run check:types
+        cd client && npm run lint
+    
+    - name: Build application
+      run: npm run deploy:prod
+    
+    - name: Deploy to Hostinger PROD
+      run: |
+        # Add your Hostinger deployment commands here
+        echo "Deploying to PROD environment"
+        # scp or rsync to Hostinger PROD server

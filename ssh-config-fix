@@ -1,0 +1,23 @@
+Host techonward.in
+    HostName techonward.in
+    Port 65002
+    User u563124769
+    IdentityFile ~/.ssh/id_rsa
+    IdentitiesOnly yes
+
+Host *
+    UseKeychain yes
+    AddKeysToAgent yes
+    IdentitiesOnly yes
+    Hostname github.com
+    IdentityFile ~/.ssh/id_rsa
+
+#Host *
+#    UseKeychain yes
+#    AddKeysToAgent yes
+#    IdentityFile ~/.ssh/id_rsa
+
+#Host git@bitbucket.org:dimblek7/meliodas.git
+#    UseKeychain yes
+#    AddKeysToAgent yes
+#    IdentityFile ~/.ssh/private_id_rsa
