@@ -3,6 +3,9 @@ import type { User, UserInsert, UserUpdate } from '@shared/types'
 // Simple flag to enable/disable fallback
 const ENABLE_FALLBACK = true // Set to false to disable localStorage fallback
 
+// Vercel backend URL
+const VERCEL_API_BASE = 'https://advik-six.vercel.app'
+
 interface Component {
   id: string
   parent_id?: string
@@ -421,7 +424,7 @@ export async function smartApiFallback<T>(
 export const ApiWithFallback = {
   register: (data: UserInsert) => 
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/auth/register`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -431,7 +434,7 @@ export const ApiWithFallback = {
 
   login: (data: { email: string; password: string }) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/auth/login`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -441,7 +444,7 @@ export const ApiWithFallback = {
 
   me: (token: string) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/me`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       }).then(res => res.json()),
       () => db.me(token)
@@ -449,7 +452,7 @@ export const ApiWithFallback = {
 
   listUsers: (token: string) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/users`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       }).then(res => res.json()),
       () => db.listUsers(token)
@@ -457,7 +460,7 @@ export const ApiWithFallback = {
 
   addUser: (token: string, data: UserInsert) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/users`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(data)
@@ -467,7 +470,7 @@ export const ApiWithFallback = {
 
   updateUser: (token: string, id: string, data: UserUpdate) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/users/${id}`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/users/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(data)
@@ -477,7 +480,7 @@ export const ApiWithFallback = {
 
   deleteUser: (token: string, id: string) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/users/${id}`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/users/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       }).then(res => res.json()),
@@ -486,7 +489,7 @@ export const ApiWithFallback = {
 
   passwordResetRequest: (email: string) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/auth/password/reset-request`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/auth/password/reset-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -496,7 +499,7 @@ export const ApiWithFallback = {
 
   passwordResetConfirm: (token: string, password: string) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/auth/password/reset-confirm`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/auth/password/reset-confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password })
@@ -512,7 +515,7 @@ export const ApiWithFallback = {
         if (status) params.append('status', status)
         if (includeChildren && !parent_id) params.append('include_children', 'true')
         
-        return fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/components?${params}`, {
+        return fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/components?${params}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }).then(res => res.json())
       },
@@ -521,7 +524,7 @@ export const ApiWithFallback = {
 
   createComponent: (token: string, form: FormData) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/components`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/components`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form
@@ -531,7 +534,7 @@ export const ApiWithFallback = {
 
   updateComponent: (token: string, id: string, form: FormData) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/components/${id}`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/components/${id}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form
@@ -541,7 +544,7 @@ export const ApiWithFallback = {
 
   deleteComponent: (token: string, id: string) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/components/${id}`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/components/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       }).then(res => res.json()),
@@ -550,7 +553,7 @@ export const ApiWithFallback = {
 
   cloneComponent: (token: string, id: string) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/components/${id}/clone`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/components/${id}/clone`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       }).then(res => res.json()),
@@ -559,7 +562,7 @@ export const ApiWithFallback = {
 
   listAttributeKeys: (token: string) =>
     smartApiFallback(
-      () => fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/components/attribute-keys`, {
+      () => fetch(`${import.meta.env.VITE_API_BASE || VERCEL_API_BASE}/api/components/attribute-keys`, {
         headers: { 'Authorization': `Bearer ${token}` }
       }).then(res => res.json()),
       () => db.listAttributeKeys(token)
