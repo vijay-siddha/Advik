@@ -619,10 +619,16 @@ async function seedComponentsIfEmpty() {
 
 ready.then(async () => {
   await seedComponentsIfEmpty();
-  app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-    if (JWT_SECRET === 'dev-secret-change-me') {
-      console.warn('WARNING: Using default JWT secret. Set JWT_SECRET in production.');
-    }
-  });
+  
+  // For Vercel serverless deployment
+  if (process.env.NODE_ENV === 'production' && process.env.VERCEL) {
+    module.exports = app;
+  } else {
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+      if (JWT_SECRET === 'dev-secret-change-me') {
+        console.warn('WARNING: Using default JWT secret. Set JWT_SECRET in production.');
+      }
+    });
+  }
 });
