@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Api } from '../api'
+import { ApiWithFallback as Api } from '../api-fallback'
 import ComparisonTable, { type ComponentItem } from './ComparisonTable'
 import NavBar from './NavBar'
 import CreateComponentForm from './CreateComponentForm'

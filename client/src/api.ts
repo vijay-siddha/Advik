@@ -1,6 +1,6 @@
 import type { User, UserInsert, UserUpdate } from '@shared/types'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://advik-lgrs.onrender.com'; //  'http://localhost:3000'
 
 function headers(token?: string, extra?: Record<string, string>, body?: any) {
   const h: Record<string, string> = { ...(extra || {}) }

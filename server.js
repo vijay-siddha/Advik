@@ -22,7 +22,7 @@ const {
   getComponentById,
   updateComponent,
   listAllComponents
-} = require('./db/sqlite');
+} = require('./db/postgres');
 const can_access = require('./api/middleware/can_access');
 const multer = require('multer');
 const fs = require('fs');
@@ -93,12 +93,17 @@ function requireAnyRole(roles) {
 
 const app = express();
 
-// CORS configuration
-const corsOrigins = NODE_ENV === 'production' 
-  ? ['https://dimblek7.github.io/Advik'] // Update with your actual GitHub Pages URL
-  : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174'];
+const alwaysAllowed = ["https://advik-client.vercel.app"];
 
-app.use(cors({ origin: corsOrigins, credentials: true }));
+// CORS configuration
+const corsOrigins = [...alwaysAllowed , 'http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174'];
+
+// Configure CORS with JSON headers
+app.use(cors({
+  origin: "*", 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
@@ -113,12 +118,11 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/db/health', async (req, res) => {
-  await ready;
   try {
-    const users = listUsers().length;
-    const { countComponents } = require('./db/sqlite');
-    const components = countComponents();
-    res.json({ ok: true, users, components });
+    await ready;
+    const users = await listUsers();
+    const components = await countComponents();
+    res.json({ ok: true, users: users.length, components });
   } catch (e) {
     res.status(500).json({ ok: false, error: String(e && e.message ? e.message : e) });
   }
@@ -134,12 +138,12 @@ app.post('/api/auth/register', async (req, res) => {
   if (!validateUserInsert(dataInsert)) {
     return res.status(400).json({ error: ajv.errorsText(validateUserInsert.errors) });
   }
-  const existing = getUserByEmail(email);
+  const existing = await getUserByEmail(email);
   if (existing) {
     return res.status(409).json({ error: 'Email already registered' });
   }
   const password_hash = bcrypt.hashSync(password, 10);
-  const isFirst = countUsers() === 0;
+  const isFirst = (await countUsers()) === 0;
   const user = {
     id: genId(),
     email,
@@ -149,7 +153,7 @@ app.post('/api/auth/register', async (req, res) => {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
-  insertUser(user);
+  await insertUser(user);
   const token = issueToken(user);
   res.status(201).json({ token, user: sanitizeUser(user) });
 });
@@ -160,7 +164,7 @@ app.post('/api/auth/login', async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: 'email and password are required' });
   }
-  const user = getUserByEmail(email);
+  const user = await getUserByEmail(email);
   if (!user) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
@@ -174,7 +178,7 @@ app.post('/api/auth/login', async (req, res) => {
 
 app.get('/api/me', authMiddleware, async (req, res) => {
   await ready;
-  const me = getUserById(req.user.sub);
+  const me = await getUserById(req.user.sub);
   if (!me) return res.status(404).json({ error: 'User not found' });
   res.json({ user: sanitizeUser(me) });
 });
@@ -182,7 +186,7 @@ app.get('/api/me', authMiddleware, async (req, res) => {
 // Admin-only user management
 app.get('/api/users', authMiddleware, requireRole('admin'), async (req, res) => {
   await ready;
-  const users = listUsers();
+  const users = await listUsers();
   res.json({ users: users.map(sanitizeUser) });
 });
 
@@ -196,7 +200,7 @@ app.post('/api/users', authMiddleware, requireRole('admin'), async (req, res) =>
   if (!validateUserInsert(dataInsert)) {
     return res.status(400).json({ error: ajv.errorsText(validateUserInsert.errors) });
   }
-  const exists = getUserByEmail(email);
+  const exists = await getUserByEmail(email);
   if (exists) {
     return res.status(409).json({ error: 'Email already exists' });
   }
@@ -228,9 +232,9 @@ app.patch('/api/users/:id', authMiddleware, requireRole('admin'), async (req, re
     return res.status(400).json({ error: ajv.errorsText(validateUserUpdate.errors) });
   }
   if (email) {
-    const dup = getUserByEmail(email);
+    const dup = await getUserByEmail(email);
     if (dup && dup.id !== id) {
-    return res.status(409).json({ error: 'Email already exists' });
+      return res.status(409).json({ error: 'Email already exists' });
     }
   }
   const patch = {};
@@ -239,8 +243,8 @@ app.patch('/api/users/:id', authMiddleware, requireRole('admin'), async (req, re
   if (role) patch.role = role === 'admin' ? 'admin' : 'user';
   if (password) patch.password_hash = bcrypt.hashSync(password, 10);
   patch.updated_at = new Date().toISOString();
-  updateUserRow(id, patch);
-  const updated = getUserById(id);
+  await updateUserRow(id, patch);
+  const updated = await getUserById(id);
   res.json({ user: sanitizeUser(updated) });
 });
 
@@ -249,7 +253,7 @@ app.delete('/api/users/:id', authMiddleware, requireRole('admin'), async (req, r
   const id = req.params.id;
   const existing = getUserById(id);
   if (!existing) return res.status(404).json({ error: 'User not found' });
-  deleteUserRow(id);
+  await deleteUserRow(id);
   res.json({ user: sanitizeUser(existing) });
 });
 
@@ -266,7 +270,7 @@ app.post('/api/auth/password/reset-request', async (req, res) => {
   }
   const token = require('crypto').randomBytes(24).toString('hex');
   const expires_at = new Date(Date.now() + 1000 * 60 * 15).toISOString();
-  createPasswordReset(user.id, token, expires_at);
+  await createPasswordReset(user.id, token, expires_at);
   res.json({ ok: true, token });
 });
 
@@ -277,13 +281,13 @@ app.post('/api/auth/password/reset-confirm', async (req, res) => {
   if (!validateResetConfirm(data)) {
     return res.status(400).json({ error: ajv.errorsText(validateResetConfirm.errors) });
   }
-  const rec = getReset(token);
+  const rec = await getReset(token);
   if (!rec) return res.status(400).json({ error: 'Invalid token' });
   if (rec.used_at) return res.status(400).json({ error: 'Token already used' });
   if (new Date(rec.expires_at).getTime() < Date.now()) return res.status(400).json({ error: 'Token expired' });
   const hash = bcrypt.hashSync(password, 10);
-  updateUserRow(rec.user_id, { password_hash: hash, updated_at: new Date().toISOString() });
-  markResetUsed(token);
+  await updateUserRow(rec.user_id, { password_hash: hash, updated_at: new Date().toISOString() });
+  await markResetUsed(token);
   res.json({ ok: true });
 });
 
@@ -304,16 +308,16 @@ app.get('/api/components', authMiddleware, can_access('user'), async (req, res) 
   await ready;
   const parent = req.query.parent_id || null;
   const includeChildren = req.query.include_children === 'true';
-  
+
   let rows;
   if (includeChildren && !parent) {
     // Get all components for tree view
-    rows = listAllComponents();
+    rows = await listAllComponents();
   } else {
     // Original behavior - get only root level or specific parent
-    rows = listComponents(parent || null);
+    rows = await listComponents(parent || null);
   }
-  
+
   const items = rows.map(r => ({
     id: r.id,
     name: r.name,
@@ -344,7 +348,7 @@ app.post(
     } catch {
       return res.status(400).json({ error: 'attributes must be JSON' });
     }
-    if (status && !['draft','published'].includes(status)) {
+    if (status && !['draft', 'published'].includes(status)) {
       return res.status(400).json({ error: 'invalid status' });
     }
     const files = req.files || {};
@@ -383,13 +387,13 @@ app.post(
 
 app.get('/api/components/attribute-keys', authMiddleware, can_access('user'), async (req, res) => {
   await ready;
-  const rows = listComponents(null);
+  const rows = await listComponents(null);
   const keys = new Set();
   rows.forEach(r => {
     try {
       const attrs = JSON.parse(r.attributes || '{}');
       Object.keys(attrs || {}).forEach(k => keys.add(k));
-    } catch {}
+    } catch { }
   });
   res.json({ keys: Array.from(keys).sort() });
 });
@@ -402,7 +406,7 @@ app.put(
   async (req, res) => {
     await ready;
     const id = req.params.id;
-    const existing = getComponentById(id);
+    const existing = await getComponentById(id);
     if (!existing) return res.status(404).json({ error: 'Not found' });
     const { name, parent_id, status } = req.body || {};
     let attributes = undefined;
@@ -413,7 +417,7 @@ app.put(
         return res.status(400).json({ error: 'attributes must be JSON' });
       }
     }
-    if (status && !['draft','published'].includes(status)) {
+    if (status && !['draft', 'published'].includes(status)) {
       return res.status(400).json({ error: 'invalid status' });
     }
     if (parent_id !== undefined) {
@@ -423,7 +427,7 @@ app.put(
       while (cur) {
         if (seen.has(cur)) return res.status(400).json({ error: 'Circular dependency' });
         seen.add(cur);
-        const p = getComponentById(cur);
+        const p = await getComponentById(cur);
         cur = p ? p.parent_id : null;
       }
     }
@@ -445,8 +449,8 @@ app.put(
       updated_at: new Date().toISOString()
     };
     Object.keys(patch).forEach(k => patch[k] === undefined && delete patch[k]);
-    updateComponent(id, patch);
-    const updated = getComponentById(id);
+    await updateComponent(id, patch);
+    const updated = await getComponentById(id);
     res.json({
       item: {
         id: updated.id,
@@ -465,11 +469,11 @@ app.put(
 app.post('/api/components/:id/clone', authMiddleware, can_access('manager'), async (req, res) => {
   await ready;
   const id = req.params.id;
-  const existing = getComponentById(id);
+  const existing = await getComponentById(id);
   if (!existing) return res.status(404).json({ error: 'Not found' });
   const now = new Date().toISOString();
   const newId = genId();
-  insertComponent({
+  await insertComponent({
     id: newId,
     name: existing.name + ' Copy',
     parent_id: existing.parent_id || null,
@@ -485,7 +489,7 @@ app.post('/api/components/:id/clone', authMiddleware, can_access('manager'), asy
 app.get('/api/components/:id/tree', authMiddleware, can_access('user'), async (req, res) => {
   await ready;
   const id = req.params.id;
-  const rows = listAllComponents();
+  const rows = await listAllComponents();
   const byId = new Map(rows.map(r => [r.id, r]));
   const root = byId.get(id);
   if (!root) return res.status(404).json({ error: 'Not found' });
@@ -527,7 +531,7 @@ app.get('/api/components/:id/tree', authMiddleware, can_access('user'), async (r
 });
 async function seedComponentsIfEmpty() {
   await ready;
-  const needSeed = countComponents() < 3;
+  const needSeed = (await countComponents()) < 3;
   if (!needSeed) return;
   const now = new Date().toISOString();
   const base = [
@@ -597,12 +601,11 @@ async function seedComponentsIfEmpty() {
       }
     }
   ];
-  const { getComponentById } = require('./db/sqlite');
   let inserted = 0;
   for (const c of base) {
-    const exists = getComponentById(c.id);
+    const exists = await getComponentById(c.id);
     if (!exists) {
-      insertComponent({
+      await insertComponent({
         id: c.id,
         name: c.name,
         parent_id: c.parent_id,
@@ -619,10 +622,16 @@ async function seedComponentsIfEmpty() {
 
 ready.then(async () => {
   await seedComponentsIfEmpty();
-  app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-    if (JWT_SECRET === 'dev-secret-change-me') {
-      console.warn('WARNING: Using default JWT secret. Set JWT_SECRET in production.');
-    }
-  });
+
+  // For Vercel serverless deployment
+  if (process.env.NODE_ENV === 'production' && process.env.VERCEL) {
+    module.exports = app;
+  } else {
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+      if (JWT_SECRET === 'dev-secret-change-me') {
+        console.warn('WARNING: Using default JWT secret. Set JWT_SECRET in production.');
+      }
+    });
+  }
 });

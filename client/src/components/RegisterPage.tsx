@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Api } from '../api'
+import { ApiWithFallback as Api } from '../api-fallback'
 import type { UserInsert } from '@shared/types'
 
 interface RegisterPageProps {

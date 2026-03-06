@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Api } from '../api'
+import { ApiWithFallback as Api } from '../api-fallback'
 
 type Node = {
   id: string
@@ -34,13 +34,21 @@ export default function ComponentInfoModal({
       return
     }
     if (token && id) {
-      Api.request && null
       ;(async () => {
-        const r = await fetch(`http://localhost:3000/api/components/${id}/tree`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        const j = await r.json()
-        setData(j)
+        try {
+          const r = await fetch(`http://localhost:3000/api/components/${id}/tree`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          const j = await r.json()
+          setData(j)
+        } catch (e) {
+          // Fallback to basic component info if tree endpoint fails
+          const items = await Api.listComponents(token)
+          const item = items.items.find((c: any) => c.id === id)
+          if (item) {
+            setData({ item, ancestors: [] })
+          }
+        }
       })()
     }
   }, [open, token, id, draft])

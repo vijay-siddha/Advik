@@ -1,7 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import './App.css'
-import { Api } from './api'
+import { ApiWithFallback as Api } from './api-fallback';
 import LoggedOutView from './components/LoggedOutView'
 import type { User } from '@shared/types'
 

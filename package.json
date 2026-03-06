@@ -4,21 +4,28 @@
   "private": true,
   "description": "Basic user management app with Express backend and simple frontend",
   "type": "commonjs",
+  "workspaces": [
+    "client"
+  ],
   "scripts": {
     "start": "node server.js",
     "codegen": "node scripts/generate-types.cjs",
     "check:types": "node scripts/check-types.cjs",
     "db:seed": "node scripts/seed-components.js",
-    "db:verify": "node scripts/verify-components.js"
+    "db:verify": "node scripts/verify-components.js",
+    "build:client": "cd client && npm run build",
+    "build:server": "echo 'Server is ready for deployment'"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.1.0",
+    "pg": "^8.20.0",
     "sql.js": "^1.10.3",
     "uuid": "^9.0.1"
   },

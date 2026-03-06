@@ -1,8 +1,8 @@
-name: Deploy Backend to GitHub Pages
+name: Deploy Backend to Vercel
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
     paths:
       - 'server.js'
       - 'package.json'
@@ -10,62 +10,20 @@ on:
       - 'api/**'
       - 'shared/**'
       - '.env*'
+      - 'vercel.json'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
         with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Create production build
-        run: |
-          mkdir -p dist
-          cp server.js dist/
-          cp -r db dist/
-          cp -r api dist/
-          cp -r shared dist/
-          cp package.json dist/
-          cp -r public dist/ || true
-          echo "NODE_ENV=production" > dist/.env
-          echo "PORT=3000" >> dist/.env
-          echo "JWT_SECRET=advik-production-jwt-secret-temporary" >> dist/.env
-          echo "DATABASE_FILE=./db.sqlite3" >> dist/.env
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist'
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_BE_PROJECT_ID }}
+          vercel-args: '--prod'

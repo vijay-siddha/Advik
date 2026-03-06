@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Api } from '../api'
+import { ApiWithFallback as Api } from '../api-fallback'
 
 const propSchema = z.object({
   key: z.string().min(1, 'Key is required'),
