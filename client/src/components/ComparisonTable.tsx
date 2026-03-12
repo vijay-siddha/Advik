@@ -104,6 +104,7 @@ export function ComparisonTable({ options, columns, onColumnsChange, highlightDi
                         <select
                           className="compare-select"
                           value={id}
+                          title="Select component"
                           onChange={e => changeAt(idx, e.target.value)}
                         >
                           {options.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}

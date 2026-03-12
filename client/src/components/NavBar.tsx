@@ -53,6 +53,7 @@ export function NavBar({ page, setPage, me, onLogout }: { page: Page; setPage: (
           <div className="nav-links">
             <button className={page === 'compare' ? 'link active' : 'link'} onClick={() => setPage('compare')}>Compare</button>
             <button className={page === 'components' ? 'link active' : 'link'} onClick={() => setPage('components')}>Components</button>
+            <button className={page === 'benchmarks' ? 'link active' : 'link'} onClick={() => setPage('benchmarks')}>Benchmarks</button>
           </div>
         </div>
         <div className="nav-right">

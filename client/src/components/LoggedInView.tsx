@@ -214,7 +214,12 @@ export default function LoggedInView({ me, token, page, setPage, onLogout }: Log
             <input placeholder="Name" value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} />
             <input placeholder="Email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} />
             <input placeholder="Temp password" type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} />
-            <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value as 'user' | 'admin' })}>
+            <select
+              title="Select user role"
+              aria-label="Select user role"
+              value={newUser.role}
+              onChange={e => setNewUser({ ...newUser, role: e.target.value as 'user' | 'admin' })}
+            >
               <option value="user">user</option>
               <option value="admin">admin</option>
             </select>
