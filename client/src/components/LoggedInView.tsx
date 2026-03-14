@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react'
 import { ApiWithFallback as Api } from '../api-fallback'
 import ComparisonTable, { type ComponentItem } from './ComparisonTable'
-import NavBar from './NavBar'
+import Shell from './Shell'
 import CreateComponentForm from './CreateComponentForm'
 import AdvancedComponentCreator from './AdvancedComponentCreator'
 import ComponentTreeView from './ComponentTreeView'
+import Dashboard from './Dashboard'
+import BenchmarkList from './BenchmarkList'
+import Comparison from './Comparison'
+import BenchmarkDetail from './BenchmarkDetail'
 import type { User } from '@shared/types'
 
 interface LoggedInViewProps {
   me: User
   token: string
-  page: 'home' | 'components' | 'compare' | 'create' | 'create-adv' | 'edit'
-  setPage: (page: 'home' | 'components' | 'compare' | 'create' | 'create-adv' | 'edit') => void
+  page: 'home' | 'components' | 'compare' | 'create' | 'create-adv' | 'edit' | 'benchmark-detail'
+  setPage: (page: 'home' | 'components' | 'compare' | 'create' | 'create-adv' | 'edit' | 'benchmark-detail') => void
   onLogout: () => void
 }
 
@@ -23,10 +27,7 @@ export default function LoggedInView({ me, token, page, setPage, onLogout }: Log
   const [compError, setCompError] = useState('')
   const [components, setComponents] = useState<any[]>([])
   const [editingComponent, setEditingComponent] = useState<any | null>(null)
-  const [viewMode, setViewMode] = useState<'tree' | 'table'>('tree')
-  const [columns, setColumns] = useState<string[]>(['CMP-001','CMP-002'])
-  const [onlyCommon, setOnlyCommon] = useState(false)
-  const [highlightDiff, setHighlightDiff] = useState(true)
+  const [selectedBenchmark, setSelectedBenchmark] = useState<any | null>(null)
 
   const TEST_COMPONENTS: ComponentItem[] = [
     {
@@ -95,21 +96,6 @@ export default function LoggedInView({ me, token, page, setPage, onLogout }: Log
   ]
 
   useEffect(() => {
-    if (page === 'compare') {
-      ensureDefaultColumns()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, combined.length])
-
-  function ensureDefaultColumns() {
-    if (columns.length >= 2) return
-    const ids = combined.map(c => c.id)
-    const base = ['CMP-001','CMP-002'].filter(id => ids.includes(id))
-    const extra = ids.filter(id => !base.includes(id)).slice(0, 2 - base.length)
-    setColumns([...base, ...extra])
-  }
-
-  useEffect(() => {
     async function loadForCompare() {
       if (!token || page !== 'compare') return
       try {
@@ -118,20 +104,18 @@ export default function LoggedInView({ me, token, page, setPage, onLogout }: Log
       } catch {}
     }
     loadForCompare()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, token])
 
   useEffect(() => {
     async function loadComponents() {
       if (!token || page !== 'components') return
       try {
-        const r = await Api.listComponents(token, undefined, undefined, viewMode === 'tree')
+        const r = await Api.listComponents(token)
         setComponents(r.items || [])
       } catch {}
     }
     loadComponents()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, token, viewMode])
+  }, [page, token])
 
   useEffect(() => {
     if (me.role === 'admin') {
@@ -204,131 +188,25 @@ export default function LoggedInView({ me, token, page, setPage, onLogout }: Log
   }
 
   return (
-    <>
-      <NavBar page={page} setPage={setPage} me={me} onLogout={onLogout} />
-
-      {page === 'home' && me.role === 'admin' && (
-        <div className="card">
-          <h2>Admin: Users</h2>
-          <div className="row">
-            <input placeholder="Name" value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} />
-            <input placeholder="Email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} />
-            <input placeholder="Temp password" type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} />
-            <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value as 'user' | 'admin' })}>
-              <option value="user">user</option>
-              <option value="admin">admin</option>
-            </select>
-            <button onClick={handleAddUser}>Add</button>
-          </div>
-          <table>
-            <thead>
-              <tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              {users.map(u => (
-                <tr key={u.id}>
-                  <td>{u.name}</td>
-                  <td>{u.email}</td>
-                  <td><span className="pill">{u.role}</span></td>
-                  <td className="actions">
-                    <button onClick={() => toggleRole(u)}>{u.role === 'admin' ? 'Demote' : 'Promote'}</button>
-                    <button onClick={() => resetPassword(u)}>Reset PW</button>
-                    <button className="secondary" onClick={() => deleteUser(u)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {adminError && <p className="error">{adminError}</p>}
-        </div>
+    <Shell page={page} setPage={setPage} me={me} onLogout={onLogout}>
+      {page === 'home' && (
+        <Dashboard userName={me.name} />
       )}
       
       {page === 'components' && (
-        <div className="card">
-          <div className="comp-page-header">
-            <div>
-              <h2 style={{ margin: 0 }}>Components</h2>
-              <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6b7280' }}>
-                {components.length} component{components.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-            <div className="comp-page-actions">
-              <div className="view-toggle">
-                <button
-                  className={viewMode === 'tree' ? 'view-toggle-btn active' : 'view-toggle-btn'}
-                  onClick={() => setViewMode('tree')}
-                >
-                  &#9783; Tree
-                </button>
-                <button
-                  className={viewMode === 'table' ? 'view-toggle-btn active' : 'view-toggle-btn'}
-                  onClick={() => setViewMode('table')}
-                >
-                  &#9776; Table
-                </button>
-              </div>
-              <button className="secondary" onClick={async () => {
-                try {
-                  setCompError('')
-                  const r = await Api.listComponents(token, undefined, undefined, viewMode === 'tree')
-                  setComponents(r.items || [])
-                } catch (e: any) {
-                  setCompError(e.message)
-                }
-              }}>&#8635; Refresh</button>
-              <button onClick={() => setPage('create')}>+ Create</button>
-              <button className="secondary" onClick={() => setPage('create-adv')}>+ Create (Advanced)</button>
-            </div>
-          </div>
-
-          {compError && <p className="error">{compError}</p>}
-
-          {components.length === 0 ? (
-            <div className="comp-empty">
-              <p>No components yet. Create one to get started.</p>
-            </div>
-          ) : viewMode === 'tree' ? (
-            <ComponentTreeView
-              components={components}
-              onComponentSelect={(component) => {
-                console.log('Selected component:', component)
-              }}
-              onEdit={(component) => {
-                setEditingComponent(component)
-                setPage('edit')
-              }}
-            />
-          ) : (
-            <div className="comp-table-wrap">
-              <table className="comp-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Parent</th>
-                    <th>Attributes</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {components.map((c) => (
-                    <tr key={c.id}>
-                      <td className="comp-table-name">{c.name}</td>
-                      <td><span className={`status-pill status-${c.status || 'draft'}`}>{c.status || 'draft'}</span></td>
-                      <td className="comp-table-muted">{c.parent_id || '—'}</td>
-                      <td className="comp-table-muted">{Object.keys(c.attributes || {}).length}</td>
-                      <td>
-                        <button className="secondary icon-btn" onClick={() => { setEditingComponent(c); setPage('edit') }} title="Edit">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <BenchmarkList 
+          onCreateNew={() => setPage('create')}
+          onView={(item) => {
+            setSelectedBenchmark(item)
+            setPage('benchmark-detail')
+          }}
+          onEdit={(item) => console.log('Edit benchmark:', item)}
+          onDelete={(item) => console.log('Delete benchmark:', item)}
+          onCompare={(items) => {
+            console.log('Compare benchmarks:', items)
+            setPage('compare')
+          }}
+        />
       )}
       
       {page === 'edit' && (
@@ -382,27 +260,21 @@ export default function LoggedInView({ me, token, page, setPage, onLogout }: Log
       )}
       
       {page === 'compare' && (
-        <div className="card">
-          <div className="row spread" style={{ marginBottom: 12 }}>
-            <div>
-              <h2 style={{ margin: 0 }}>Compare Components</h2>
-              <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6b7280' }}>
-                {columns.length} component{columns.length !== 1 ? 's' : ''} selected
-                &nbsp;&middot;&nbsp; {combined.length} available
-              </p>
-            </div>
-          </div>
-          <ComparisonTable
-            options={combined}
-            columns={columns}
-            onColumnsChange={(ids) => setColumns(ids)}
-            highlightDifferences={highlightDiff}
-            onlyCommon={onlyCommon}
-            onToggleHighlight={(v) => setHighlightDiff(v)}
-            onToggleOnlyCommon={(v) => setOnlyCommon(v)}
-          />
-        </div>
+        <Comparison 
+          onGenerateReport={() => console.log('Generate report')}
+          onAddProduct={() => setPage('components')}
+        />
       )}
-    </>
+      
+      {page === 'benchmark-detail' && (
+        <BenchmarkDetail 
+          benchmarkId={selectedBenchmark?.id || 'BMT-2024-TDI'}
+          onEdit={() => console.log('Edit benchmark')}
+          onReport={() => console.log('Generate report')}
+          onShare={() => console.log('Share benchmark')}
+          onBack={() => setPage('components')}
+        />
+      )}
+    </Shell>
   )
 }

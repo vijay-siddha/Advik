@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Comparison - ADVIK</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #f5f7fa; 
+            color: #2d3748;
+        }
+        
+        .header {
+            background: white;
+            padding: 0 30px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+        
+        .menu-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f7fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2b6cb0;
+            letter-spacing: -0.5px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 300px;
+            padding: 10px 40px 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 14px;
+            background: #f7fafc;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+        
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f7fafc;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            position: relative;
+        }
+        
+        .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            background: #e53e3e;
+            color: white;
+            font-size: 11px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: #f7fafc;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            bottom: 0;
+            width: 260px;
+            background: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 25px;
+            color: #4a5568;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: #ebf8ff;
+            color: #2b6cb0;
+            border-left-color: #2b6cb0;
+        }
+        
+        .nav-item.active {
+            background: #bee3f8;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            width: 30px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            margin-top: 70px;
+            padding: 30px;
+        }
+        
+        .breadcrumb {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .breadcrumb span {
+            color: #2b6cb0;
+            font-weight: 600;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .btn-primary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #2b6cb0;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .selection-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+        
+        .selected-products {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .product-chip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .product-chip.bosch {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .product-chip.vw {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .product-chip.toyota {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .product-chip .remove {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .add-product-btn {
+            padding: 15px 25px;
+            border: 2px dashed #cbd5e0;
+            background: #f7fafc;
+            border-radius: 12px;
+            color: #718096;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .add-product-btn:hover {
+            border-color: #2b6cb0;
+            color: #2b6cb0;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+        
+        .radar-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+            position: relative;
+        }
+        
+        .radar-chart {
+            width: 250px;
+            height: 250px;
+            position: relative;
+        }
+        
+        .radar-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #e2e8f0;
+            border-radius: 50%;
+        }
+        
+        .radar-bg:nth-child(2) { transform: scale(0.75); }
+        .radar-bg:nth-child(3) { transform: scale(0.5); }
+        .radar-bg:nth-child(4) { transform: scale(0.25); }
+        
+        .radar-axis {
+            position: absolute;
+            width: 2px;
+            height: 50%;
+            background: #e2e8f0;
+            left: 50%;
+            top: 0;
+            transform-origin: bottom;
+        }
+        
+        .radar-legend {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+        
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 250px;
+            padding: 20px 0;
+            gap: 30px;
+        }
+        
+        .bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .bars {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            height: 200px;
+        }
+        
+        .bar {
+            width: 40px;
+            border-radius: 6px 6px 0 0;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .bar:hover { opacity: 0.8; }
+        
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .bar-label {
+            font-size: 13px;
+            color: #718096;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .comparison-table-container {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            margin-bottom: 25px;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparison-table th {
+            background: #f7fafc;
+            padding: 18px 15px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 700;
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .comparison-table td {
+            padding: 18px 15px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 15px;
+        }
+        
+        .comparison-table tr:hover { background: #f7fafc; }
+        
+        .winner {
+            background: #c6f6d5 !important;
+            color: #22543d;
+            font-weight: 700;
+        }
+        
+        .product-header-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .product-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .metric-name {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .insights-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 25px;
+            color: white;
+        }
+        
+        .insights-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .insight-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        
+        .insight-icon { font-size: 24px; }
+        
+        .insight-text {
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        .insight-text strong { color: #ffd700; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <button class="menu-btn">☰</button>
+            <div class="logo-text">ADVIK BENCHMARKING</div>
+        </div>
+        <div class="header-right">
+            <div class="search-box">
+                <input type="text" placeholder="Search benchmarks...">
+                <span class="search-icon">🔍</span>
+            </div>
+            <button class="icon-btn">🔔<span class="badge">3</span></button>
+            <div class="user-profile">
+                <div class="avatar">RK</div>
+                <span>Rajesh Kumar ▼</span>
+            </div>
+        </div>
+    </header>
+    
+    <nav class="sidebar">
+        <a href="#" class="nav-item">
+            <span class="nav-icon">🏠</span>Dashboard
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">📊</span>Benchmarks
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">📁</span>Projects
+        </a>
+        <a href="#" class="nav-item active">
+            <span class="nav-icon">🔍</span>Comparisons
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">📄</span>Reports
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">📷</span>Media Library
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">⚙️</span>Settings
+        </a>
+    </nav>
+    
+    <main class="main-content">
+        <div class="breadcrumb">
+            Home / <span>Comparative Analysis</span>
+        </div>
+        
+        <div class="page-header">
+            <h1 class="page-title">📊 Product Comparison</h1>
+            <button class="btn-primary">
+                <span>📄</span>
+                Generate Report
+            </button>
+        </div>
+        
+        <!-- Product Selection - 3 Products -->
+        <div class="selection-panel">
+            <div class="panel-title">Select Products to Compare (3 Selected)</div>
+            <div class="selected-products">
+                <div class="product-chip bosch">
+                    <span>🔧</span>
+                    <div>
+                        <div>Bosch 2.0L TDI</div>
+                        <div style="font-size: 12px; opacity: 0.9;">₹4.25L • 185kg • 190hp</div>
+                    </div>
+                    <span class="remove">×</span>
+                </div>
+                <div class="product-chip vw">
+                    <span>🔧</span>
+                    <div>
+                        <div>VW 2.0L TDI</div>
+                        <div style="font-size: 12px; opacity: 0.9;">₹4.65L • 195kg • 177hp</div>
+                    </div>
+                    <span class="remove">×</span>
+                </div>
+                <div class="product-chip toyota">
+                    <span>🔧</span>
+                    <div>
+                        <div>Toyota 2.0L D4D</div>
+                        <div style="font-size: 12px; opacity: 0.9;">₹4.10L • 188kg • 170hp</div>
+                    </div>
+                    <span class="remove">×</span>
+                </div>
+                <button class="add-product-btn">
+                    <span>+</span>
+                    Add Product (Max 4)
+                </button>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">📈 Performance Radar</div>
+                <div class="radar-container">
+                    <div class="radar-chart">
+                        <div class="radar-bg"></div>
+                        <div class="radar-bg"></div>
+                        <div class="radar-bg"></div>
+                        <div class="radar-bg"></div>
+                        <div class="radar-axis" style="transform: rotate(0deg);"></div>
+                        <div class="radar-axis" style="transform: rotate(60deg);"></div>
+                        <div class="radar-axis" style="transform: rotate(120deg);"></div>
+                        <div class="radar-axis" style="transform: rotate(180deg);"></div>
+                        <div class="radar-axis" style="transform: rotate(240deg);"></div>
+                        <div class="radar-axis" style="transform: rotate(300deg);"></div>
+                    </div>
+                    <div class="radar-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #667eea;"></div>
+                            <span>Bosch TDI</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #f5576c;"></div>
+                            <span>VW TDI</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #00f2fe;"></div>
+                            <span>Toyota D4D</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: center; gap: 40px; margin-top: 20px;">
+                    <span style="font-size: 12px; color: #718096;">Cost</span>
+                    <span style="font-size: 12px; color: #718096;">Quality</span>
+                    <span style="font-size: 12px; color: #718096;">Performance</span>
+                    <span style="font-size: 12px; color: #718096;">NVH</span>
+                    <span style="font-size: 12px; color: #718096;">Efficiency</span>
+                    <span style="font-size: 12px; color: #718096;">Durability</span>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">💰 Cost Comparison</div>
+                <div class="bar-chart">
+                    <div class="bar-group">
+                        <div class="bars">
+                            <div class="bar" style="height: 91%; background: #667eea;">
+                                <span class="bar-value">₹4.25L</span>
+                            </div>
+                            <div class="bar" style="height: 100%; background: #f5576c;">
+                                <span class="bar-value">₹4.65L</span>
+                            </div>
+                            <div class="bar" style="height: 88%; background: #00f2fe;">
+                                <span class="bar-value">₹4.10L</span>
+                            </div>
+                        </div>
+                        <span class="bar-label">Total Cost</span>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bars">
+                            <div class="bar" style="height: 95%; background: #667eea;">
+                                <span class="bar-value">185kg</span>
+                            </div>
+                            <div class="bar" style="height: 100%; background: #f5576c;">
+                                <span class="bar-value">195kg</span>
+                            </div>
+                            <div class="bar" style="height: 96%; background: #00f2fe;">
+                                <span class="bar-value">188kg</span>
+                            </div>
+                        </div>
+                        <span class="bar-label">Weight</span>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bars">
+                            <div class="bar" style="height: 100%; background: #667eea;">
+                                <span class="bar-value">190hp</span>
+                            </div>
+                            <div class="bar" style="height: 93%; background: #f5576c;">
+                                <span class="bar-value">177hp</span>
+                            </div>
+                            <div class="bar" style="height: 89%; background: #00f2fe;">
+                                <span class="bar-value">170hp</span>
+                            </div>
+                        </div>
+                        <span class="bar-label">Power</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comparison Table -->
+        <div class="comparison-table-container">
+            <div class="chart-title">📋 Detailed Comparison (3 Products)</div>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>
+                            <div class="product-header-cell">
+                                <div class="product-icon" style="background: #e0e7ff;">🔧</div>
+                                <div>Bosch 2.0L TDI</div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="product-header-cell">
+                                <div class="product-icon" style="background: #fce7f3;">🔧</div>
+                                <div>VW 2.0L TDI</div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="product-header-cell">
+                                <div class="product-icon" style="background: #cffafe;">🔧</div>
+                                <div>Toyota 2.0L D4D</div>
+                            </div>
+                        </th>
+                        <th>Winner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="metric-name">Total Cost</td>
+                        <td>₹4,25,000</td>
+                        <td>₹4,65,000</td>
+                        <td class="winner">₹4,10,000</td>
+                        <td>🏆 Toyota</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-name">Weight</td>
+                        <td class="winner">185 kg</td>
+                        <td>195 kg</td>
+                        <td>188 kg</td>
+                        <td>🏆 Bosch</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-name">Power Output</td>
+                        <td class="winner">190 hp</td>
+                        <td>177 hp</td>
+                        <td>170 hp</td>
+                        <td>🏆 Bosch</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-name">Torque</td>
+                        <td class="winner">400 Nm</td>
+                        <td>380 Nm</td>
+                        <td>360 Nm</td>
+                        <td>🏆 Bosch</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-name">Fuel Efficiency</td>
+                        <td class="winner">22 km/l</td>
+                        <td>20 km/l</td>
+                        <td>21 km/l</td>
+                        <td>🏆 Bosch</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-name">NVH Score</td>
+                        <td>8.5/10</td>
+                        <td class="winner">8.8/10</td>
+                        <td>8.3/10</td>
+                        <td>🏆 VW</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-name">Quality Score</td>
+                        <td class="winner">9.2/10</td>
+                        <td>8.9/10</td>
+                        <td>8.7/10</td>
+                        <td>🏆 Bosch</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-name">Assembly Time</td>
+                        <td class="winner">4.5 hrs</td>
+                        <td>5.2 hrs</td>
+                        <td>4.8 hrs</td>
+                        <td>🏆 Bosch</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-name">DFMA Score</td>
+                        <td class="winner">8.2/10</td>
+                        <td>7.5/10</td>
+                        <td>7.8/10</td>
+                        <td>🏆 Bosch</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- AI Insights -->
+        <div class="insights-panel">
+            <div class="insights-title">
+                <span>💡</span>
+                AI-Powered Insights (3-Product Analysis)
+            </div>
+            <div class="insight-item">
+                <span class="insight-icon">🏆</span>
+                <div class="insight-text">
+                    <strong>Bosch engine leads in 6 out of 9 metrics</strong>, including power, torque, fuel efficiency, and manufacturing efficiency. Toyota offers the lowest cost but sacrifices performance.
+                </div>
+            </div>
+            <div class="insight-item">
+                <span class="insight-icon">💰</span>
+                <div class="insight-text">
+                    <strong>Cost analysis:</strong> Toyota is cheapest at ₹4.10L, Bosch is middle at ₹4.25L, VW is most expensive at ₹4.65L. Bosch offers best value with only 3.6% cost premium over Toyota but 11.8% more power.
+                </div>
+            </div>
+            <div class="insight-item">
+                <span class="insight-icon">⚖️</span>
+                <div class="insight-text">
+                    <strong>Weight comparison:</strong> Bosch is lightest (185kg), Toyota is +3kg (188kg), VW is heaviest (+10kg). Weight advantage gives Bosch better power-to-weight ratio.
+                </div>
+            </div>
+            <div class="insight-item">
+                <span class="insight-icon">🎯</span>
+                <div class="insight-text">
+                    <strong>Strategic recommendation:</strong> Choose <strong>Bosch</strong> for performance & efficiency, <strong>Toyota</strong> for cost-sensitive applications, <strong>VW</strong> only for NVH-critical luxury segments.
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

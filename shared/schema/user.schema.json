@@ -1,0 +1,96 @@
+{
+  "$id": "user.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$defs": {
+    "UserInsert": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Full name of the user"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "Email address of the user"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 255,
+          "description": "Password for the user account"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"],
+          "default": "user",
+          "description": "Role of the user in the system"
+        }
+      },
+      "required": ["name", "email", "password", "role"],
+      "additionalProperties": false
+    },
+    "UserUpdate": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Full name of the user"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "Email address of the user"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"],
+          "description": "Role of the user in the system"
+        }
+      },
+      "minProperties": 1,
+      "additionalProperties": false
+    },
+    "PasswordResetRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "Email address for password reset"
+        }
+      },
+      "required": ["email"],
+      "additionalProperties": false
+    },
+    "PasswordResetConfirm": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Password reset token"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 255,
+          "description": "New password for the user account"
+        }
+      },
+      "required": ["token", "password"],
+      "additionalProperties": false
+    }
+  }
+}

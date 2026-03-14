@@ -1,24 +1,54 @@
 import React, { useState, useEffect, useRef } from 'react'
 import type { User } from '@shared/types'
-import './NavBar.css'
+import './Shell.css'
+import { type Page } from './NavBar'
 
-export type Page = 'home' | 'components' | 'compare' | 'create' | 'create-adv' | 'edit' | 'benchmark-detail'
-
-function crumbsFor(page: Page) {
-  if (page === 'home') return ['Home']
-  if (page === 'components') return ['Home', 'Benchmark List']
-  if (page === 'benchmark-detail') return ['Home', 'Benchmark Details']
-  if (page === 'compare') return ['Home', 'Comparisons']
-  if (page === 'create') return ['Home', 'Projects', 'Create']
-  if (page === 'edit') return ['Home', 'Components', 'Edit']
-  return ['Home']
+interface ShellProps {
+  children: React.ReactNode
+  page: Page
+  setPage: (page: Page) => void
+  me: User
+  onLogout: () => void
 }
 
-export function NavBar({ page, setPage, me, onLogout }: { page: Page; setPage: (p: Page) => void; me: User; onLogout: () => void }) {
+export default function Shell({ children, page, setPage, me, onLogout }: ShellProps) {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
-  const crumbs = crumbsFor(page)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const handleMenuToggle = () => {
+    if (isMobile) {
+      setMobileMenuOpen(!mobileMenuOpen)
+    } else {
+      setSidebarCollapsed(!sidebarCollapsed)
+    }
+  }
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  }
+
+  const crumbsFor = (page: Page) => {
+    if (page === 'home') return ['Home']
+    if (page === 'components') return ['Home', 'Benchmark List']
+    if (page === 'benchmark-detail') return ['Home', 'Benchmark Details']
+    if (page === 'compare') return ['Home', 'Comparisons']
+    if (page === 'create') return ['Home', 'Projects', 'Create']
+    if (page === 'edit') return ['Home', 'Components', 'Edit']
+    return ['Home']
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -33,23 +63,38 @@ export function NavBar({ page, setPage, me, onLogout }: { page: Page; setPage: (
     }
   }, [])
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-  }
+  const crumbs = crumbsFor(page)
 
   return (
-    <div className="navbar">
+    <div className="shell">
       {/* Header */}
-      <header className="nav-header">
+      <header className="header">
         <div className="header-left">
           <button 
             className="menu-btn" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
+            onClick={handleMenuToggle}
+            aria-label={isMobile ? "Toggle mobile menu" : (sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar")}
+            title={isMobile ? "Toggle mobile menu" : (sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar")}
           >
-            ☰
+            {isMobile ? '☰' : (sidebarCollapsed ? '☰' : '◀')}
           </button>
-          <div className="logo-text">ADVIK BENCHMARKING</div>
+          <div className="header-breadcrumb">
+            {crumbs.map((c, i) => {
+              const isLast = i === crumbs.length - 1
+              const onClick = () => {
+                if (c === 'Home') setPage('home')
+                if (c === 'Compare') setPage('compare')
+                if (c === 'Components') setPage('components')
+                if (c === 'Create') setPage('create')
+                if (c === 'Edit') setPage('components')
+              }
+              return (
+                <span key={c} className={isLast ? 'crumb current' : 'crumb'} onClick={!isLast ? onClick : undefined}>
+                  {c}{!isLast && <span className="sep">/</span>}
+                </span>
+              )
+            })}
+          </div>
         </div>
         <div className="header-right">
           <div className="search-box">
@@ -68,7 +113,7 @@ export function NavBar({ page, setPage, me, onLogout }: { page: Page; setPage: (
       </header>
 
       {/* Sidebar */}
-      <nav className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
+      <nav className={`sidebar ${mobileMenuOpen ? 'open' : ''} ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="nav-items">
           <a 
             href="#" 
@@ -76,31 +121,23 @@ export function NavBar({ page, setPage, me, onLogout }: { page: Page; setPage: (
             onClick={(e) => { e.preventDefault(); setPage('home'); setMobileMenuOpen(false); }}
           >
             <span className="nav-icon">🏠</span>
-            Dashboard
+            {!sidebarCollapsed && <span>Dashboard</span>}
           </a>
           <a 
             href="#" 
             className={`nav-item ${page === 'components' ? 'active' : ''}`}
-            onClick={(e) => { 
-              e.preventDefault(); 
-              setPage('components'); 
-              setMobileMenuOpen(false); 
-            }}
+            onClick={(e) => { e.preventDefault(); setPage('components'); setMobileMenuOpen(false); }}
           >
             <span className="nav-icon">📊</span>
-            Benchmark List
+            {!sidebarCollapsed && <span>Benchmark List</span>}
           </a>
           <a 
             href="#" 
             className={`nav-item ${page === 'benchmark-detail' ? 'active' : ''}`}
-            onClick={(e) => { 
-              e.preventDefault(); 
-              setPage('benchmark-detail'); 
-              setMobileMenuOpen(false); 
-            }}
+            onClick={(e) => { e.preventDefault(); setPage('benchmark-detail'); setMobileMenuOpen(false); }}
           >
             <span className="nav-icon">📋</span>
-            Benchmark Details
+            {!sidebarCollapsed && <span>Benchmark Details</span>}
           </a>
           <a 
             href="#" 
@@ -108,7 +145,7 @@ export function NavBar({ page, setPage, me, onLogout }: { page: Page; setPage: (
             onClick={(e) => { e.preventDefault(); setPage('compare'); setMobileMenuOpen(false); }}
           >
             <span className="nav-icon">🔍</span>
-            Comparisons
+            {!sidebarCollapsed && <span>Comparisons</span>}
           </a>
           <a 
             href="#" 
@@ -116,19 +153,19 @@ export function NavBar({ page, setPage, me, onLogout }: { page: Page; setPage: (
             onClick={(e) => { e.preventDefault(); setPage('create'); setMobileMenuOpen(false); }}
           >
             <span className="nav-icon">📁</span>
-            Projects
+            {!sidebarCollapsed && <span>Projects</span>}
           </a>
           <a href="#" className="nav-item">
             <span className="nav-icon">📄</span>
-            Reports
+            {!sidebarCollapsed && <span>Reports</span>}
           </a>
           <a href="#" className="nav-item">
             <span className="nav-icon">📷</span>
-            Media Library
+            {!sidebarCollapsed && <span>Media Library</span>}
           </a>
           <a href="#" className="nav-item">
             <span className="nav-icon">⚙️</span>
-            Settings
+            {!sidebarCollapsed && <span>Settings</span>}
           </a>
         </div>
       </nav>
@@ -170,28 +207,10 @@ export function NavBar({ page, setPage, me, onLogout }: { page: Page; setPage: (
         </div>
       )}
 
-      {/* Breadcrumb */}
-      <div className="breadcrumb-container">
-        <nav className="breadcrumbs" aria-label="Breadcrumb">
-          {crumbs.map((c, i) => {
-            const isLast = i === crumbs.length - 1
-            const onClick = () => {
-              if (c === 'Home') setPage('home')
-              if (c === 'Compare') setPage('compare')
-              if (c === 'Components') setPage('components')
-              if (c === 'Create') setPage('create')
-              if (c === 'Edit') setPage('components')
-            }
-            return (
-              <span key={c} className={isLast ? 'crumb current' : 'crumb'} onClick={!isLast ? onClick : undefined}>
-                {c}{!isLast && <span className="sep">/</span>}
-              </span>
-            )
-          })}
-        </nav>
-      </div>
+      {/* Main Content Area */}
+      <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        {children}
+      </main>
     </div>
   )
 }
-
-export default NavBar
